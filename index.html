@@ -261,6 +261,7 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
+            cursor: pointer;
         }
 
         body.dark-mode .paste-card {
@@ -288,6 +289,10 @@
             font-weight: 600;
             font-size: 1.1rem;
             margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
         }
 
         .paste-language {
@@ -460,6 +465,8 @@
             font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             overflow-x: auto;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         body.dark-mode .paste-content {
@@ -519,6 +526,24 @@
             display: none;
         }
 
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -542,6 +567,14 @@
             
             .paste-actions .btn {
                 width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -582,7 +615,10 @@
 
             <h2>Recent Public Pastes</h2>
             <div class="paste-list" id="recentPastes">
-                <!-- Recent pastes will be loaded here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading recent pastes...</p>
+                </div>
             </div>
         </div>
 
@@ -645,14 +681,22 @@
         <div id="my-pastes" class="page">
             <h1>My Pastes</h1>
             <div class="paste-list" id="userPastes">
-                <!-- User's pastes will be loaded here -->
+                <div class="empty-state" id="userPastesEmpty">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <h3>Sign in to view your pastes</h3>
+                    <p>You need to be signed in to see your created pastes.</p>
+                    <button class="btn btn-primary" id="signInFromPastes">Sign In</button>
+                </div>
             </div>
         </div>
 
         <!-- View Paste Page -->
         <div id="view-paste" class="page">
             <div class="view-paste" id="pasteContainer">
-                <!-- Individual paste will be loaded here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading paste...</p>
+                </div>
             </div>
         </div>
 
@@ -797,6 +841,7 @@
             const pages = document.querySelectorAll('.page');
             const authTabs = document.querySelectorAll('.auth-tab');
             const authForms = document.querySelectorAll('.auth-form');
+            const signInFromPastes = document.getElementById('signInFromPastes');
             
             // Theme Toggle
             themeToggle.addEventListener('click', function() {
@@ -920,6 +965,13 @@
                 }
             });
 
+            // Sign in from pastes page
+            if (signInFromPastes) {
+                signInFromPastes.addEventListener('click', function() {
+                    authModal.classList.remove('hidden');
+                });
+            }
+
             // Close modal when clicking outside
             authModal.addEventListener('click', function(e) {
                 if (e.target === authModal) {
@@ -948,6 +1000,9 @@
                     .then((userCredential) => {
                         authModal.classList.add('hidden');
                         showAlert('Signed in successfully', 'success');
+                        // Clear form fields
+                        document.getElementById('signinEmail').value = '';
+                        document.getElementById('signinPassword').value = '';
                     })
                     .catch((error) => {
                         console.error('Sign in error:', error);
@@ -979,6 +1034,10 @@
                     .then((userCredential) => {
                         authModal.classList.add('hidden');
                         showAlert('Account created successfully', 'success');
+                        // Clear form fields
+                        document.getElementById('signupEmail').value = '';
+                        document.getElementById('signupPassword').value = '';
+                        document.getElementById('confirmPassword').value = '';
                     })
                     .catch((error) => {
                         console.error('Sign up error:', error);
@@ -1003,9 +1062,11 @@
                 if (user) {
                     window.currentUser = user;
                     authButton.textContent = 'Sign Out';
+                    document.getElementById('userPastesEmpty').classList.add('hidden');
                 } else {
                     window.currentUser = null;
                     authButton.textContent = 'Sign In';
+                    document.getElementById('userPastesEmpty').classList.remove('hidden');
                 }
             });
 
@@ -1068,24 +1129,31 @@
                 }
             });
 
-            // Load Recent Pastes
+            // Load Recent Pastes - Fixed to handle index errors gracefully
             function loadRecentPastes() {
                 const recentPastesContainer = document.getElementById('recentPastes');
-                recentPastesContainer.innerHTML = '<p>Loading recent pastes...</p>';
                 
-                const q = window.firebaseMethods.query(
+                // Try to load with complex query first
+                const complexQuery = window.firebaseMethods.query(
                     window.firebaseMethods.collection(window.firebase.db, "pastes"),
                     window.firebaseMethods.where("visibility", "==", "public"),
                     window.firebaseMethods.orderBy("createdAt", "desc"),
                     window.firebaseMethods.limit(9)
                 );
                 
-                window.firebaseMethods.getDocs(q)
+                window.firebaseMethods.getDocs(complexQuery)
                     .then((querySnapshot) => {
                         recentPastesContainer.innerHTML = '';
                         
                         if (querySnapshot.empty) {
-                            recentPastesContainer.innerHTML = '<p>No public pastes found.</p>';
+                            recentPastesContainer.innerHTML = `
+                                <div class="empty-state">
+                                    <i class="fas fa-paste"></i>
+                                    <h3>No public pastes yet</h3>
+                                    <p>Be the first to create a public paste!</p>
+                                    <a href="#/create" class="btn btn-primary">Create Paste</a>
+                                </div>
+                            `;
                             return;
                         }
                         
@@ -1096,33 +1164,105 @@
                         });
                     })
                     .catch((error) => {
-                        console.error('Error loading pastes:', error);
-                        recentPastesContainer.innerHTML = '<p>Error loading pastes.</p>';
+                        console.error('Complex query failed, trying simple query:', error);
+                        
+                        // Fallback to simple query without ordering/filtering
+                        const simpleQuery = window.firebaseMethods.collection(window.firebase.db, "pastes");
+                        
+                        window.firebaseMethods.getDocs(simpleQuery)
+                            .then((querySnapshot) => {
+                                recentPastesContainer.innerHTML = '';
+                                
+                                if (querySnapshot.empty) {
+                                    recentPastesContainer.innerHTML = `
+                                        <div class="empty-state">
+                                            <i class="fas fa-paste"></i>
+                                            <h3>No pastes yet</h3>
+                                            <p>Be the first to create a paste!</p>
+                                            <a href="#/create" class="btn btn-primary">Create Paste</a>
+                                        </div>
+                                    `;
+                                    return;
+                                }
+                                
+                                // Filter public pastes manually and limit to 9
+                                let publicPastes = [];
+                                querySnapshot.forEach((doc) => {
+                                    const paste = doc.data();
+                                    if (paste.visibility === 'public') {
+                                        publicPastes.push({...paste, id: doc.id});
+                                    }
+                                });
+                                
+                                // Sort by date manually (newest first)
+                                publicPastes.sort((a, b) => {
+                                    const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                                    const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                                    return dateB - dateA;
+                                });
+                                
+                                // Take only first 9
+                                publicPastes = publicPastes.slice(0, 9);
+                                
+                                if (publicPastes.length === 0) {
+                                    recentPastesContainer.innerHTML = `
+                                        <div class="empty-state">
+                                            <i class="fas fa-paste"></i>
+                                            <h3>No public pastes yet</h3>
+                                            <p>Be the first to create a public paste!</p>
+                                            <a href="#/create" class="btn btn-primary">Create Paste</a>
+                                        </div>
+                                    `;
+                                    return;
+                                }
+                                
+                                publicPastes.forEach((paste) => {
+                                    const pasteElement = createPasteCard(paste, paste.id);
+                                    recentPastesContainer.appendChild(pasteElement);
+                                });
+                            })
+                            .catch((error) => {
+                                console.error('Error loading pastes:', error);
+                                recentPastesContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <h3>Error loading pastes</h3>
+                                        <p>There was a problem loading the recent pastes. Please try again later.</p>
+                                    </div>
+                                `;
+                            });
                     });
             }
 
-            // Load User Pastes
+            // Load User Pastes - Fixed to handle index errors gracefully
             function loadUserPastes() {
                 if (!window.currentUser) {
-                    document.getElementById('userPastes').innerHTML = '<p>Please sign in to view your pastes.</p>';
                     return;
                 }
                 
                 const userPastesContainer = document.getElementById('userPastes');
-                userPastesContainer.innerHTML = '<p>Loading your pastes...</p>';
+                userPastesContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Loading your pastes...</p></div>';
                 
-                const q = window.firebaseMethods.query(
+                // Try complex query first
+                const complexQuery = window.firebaseMethods.query(
                     window.firebaseMethods.collection(window.firebase.db, "pastes"),
                     window.firebaseMethods.where("userId", "==", window.currentUser.uid),
                     window.firebaseMethods.orderBy("createdAt", "desc")
                 );
                 
-                window.firebaseMethods.getDocs(q)
+                window.firebaseMethods.getDocs(complexQuery)
                     .then((querySnapshot) => {
                         userPastesContainer.innerHTML = '';
                         
                         if (querySnapshot.empty) {
-                            userPastesContainer.innerHTML = '<p>You haven\'t created any pastes yet.</p>';
+                            userPastesContainer.innerHTML = `
+                                <div class="empty-state">
+                                    <i class="fas fa-paste"></i>
+                                    <h3>No pastes yet</h3>
+                                    <p>You haven't created any pastes yet.</p>
+                                    <a href="#/create" class="btn btn-primary">Create Your First Paste</a>
+                                </div>
+                            `;
                             return;
                         }
                         
@@ -1133,15 +1273,64 @@
                         });
                     })
                     .catch((error) => {
-                        console.error('Error loading user pastes:', error);
-                        userPastesContainer.innerHTML = '<p>Error loading your pastes.</p>';
+                        console.error('Complex user query failed, trying simple query:', error);
+                        
+                        // Fallback to simple query
+                        const simpleQuery = window.firebaseMethods.collection(window.firebase.db, "pastes");
+                        
+                        window.firebaseMethods.getDocs(simpleQuery)
+                            .then((querySnapshot) => {
+                                userPastesContainer.innerHTML = '';
+                                
+                                let userPastes = [];
+                                querySnapshot.forEach((doc) => {
+                                    const paste = doc.data();
+                                    if (paste.userId === window.currentUser.uid) {
+                                        userPastes.push({...paste, id: doc.id});
+                                    }
+                                });
+                                
+                                if (userPastes.length === 0) {
+                                    userPastesContainer.innerHTML = `
+                                        <div class="empty-state">
+                                            <i class="fas fa-paste"></i>
+                                            <h3>No pastes yet</h3>
+                                            <p>You haven't created any pastes yet.</p>
+                                            <a href="#/create" class="btn btn-primary">Create Your First Paste</a>
+                                        </div>
+                                    `;
+                                    return;
+                                }
+                                
+                                // Sort by date manually
+                                userPastes.sort((a, b) => {
+                                    const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                                    const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                                    return dateB - dateA;
+                                });
+                                
+                                userPastes.forEach((paste) => {
+                                    const pasteElement = createPasteCard(paste, paste.id, true);
+                                    userPastesContainer.appendChild(pasteElement);
+                                });
+                            })
+                            .catch((error) => {
+                                console.error('Error loading user pastes:', error);
+                                userPastesContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <h3>Error loading your pastes</h3>
+                                        <p>There was a problem loading your pastes. Please try again later.</p>
+                                    </div>
+                                `;
+                            });
                     });
             }
 
             // Load Individual Paste
             function loadPaste(pasteId) {
                 const pasteContainer = document.getElementById('pasteContainer');
-                pasteContainer.innerHTML = '<p>Loading paste...</p>';
+                pasteContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Loading paste...</p></div>';
                 
                 const docRef = window.firebaseMethods.doc(window.firebase.db, "pastes", pasteId);
                 
@@ -1153,15 +1342,25 @@
                             // Check if paste is private and user doesn't have access
                             if (paste.visibility === 'private' && 
                                 (!window.currentUser || paste.userId !== window.currentUser.uid)) {
-                                pasteContainer.innerHTML = '<p>This is a private paste and you do not have access to it.</p>';
+                                pasteContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-lock"></i>
+                                        <h3>Private Paste</h3>
+                                        <p>This is a private paste and you do not have access to it.</p>
+                                        ${!window.currentUser ? 
+                                            '<button class="btn btn-primary" onclick="document.getElementById(\'authModal\').classList.remove(\'hidden\')">Sign In</button>' : 
+                                            ''
+                                        }
+                                    </div>
+                                `;
                                 return;
                             }
                             
                             pasteContainer.innerHTML = `
                                 <div class="paste-meta">
                                     <div>
-                                        <h2>${paste.title}</h2>
-                                        <p>Created by: ${paste.userEmail || 'Anonymous'}</p>
+                                        <h2>${paste.title || 'Untitled'}</h2>
+                                        <p>Created by: ${paste.userEmail || 'Anonymous'} • ${formatDate(paste.createdAt?.toDate())}</p>
                                     </div>
                                     <div>
                                         <span class="paste-language">${paste.language}</span>
@@ -1169,7 +1368,7 @@
                                 </div>
                                 <div class="paste-content">${escapeHtml(paste.content)}</div>
                                 <div class="action-buttons">
-                                    <button class="btn btn-outline" onclick="copyToClipboard('${escapeHtml(paste.content)}')">
+                                    <button class="btn btn-outline" onclick="copyToClipboard('${escapeHtml(paste.content).replace(/'/g, "\\'")}')">
                                         <i class="fas fa-copy"></i> Copy
                                     </button>
                                     ${window.currentUser && paste.userId === window.currentUser.uid ? 
@@ -1183,12 +1382,25 @@
                                 </div>
                             `;
                         } else {
-                            pasteContainer.innerHTML = '<p>Paste not found.</p>';
+                            pasteContainer.innerHTML = `
+                                <div class="empty-state">
+                                    <i class="fas fa-question-circle"></i>
+                                    <h3>Paste Not Found</h3>
+                                    <p>The paste you're looking for doesn't exist or may have been deleted.</p>
+                                    <a href="#/create" class="btn btn-primary">Create New Paste</a>
+                                </div>
+                            `;
                         }
                     })
                     .catch((error) => {
                         console.error('Error loading paste:', error);
-                        pasteContainer.innerHTML = '<p>Error loading paste.</p>';
+                        pasteContainer.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h3>Error Loading Paste</h3>
+                                <p>There was a problem loading this paste. Please try again later.</p>
+                            </div>
+                        `;
                     });
             }
 
@@ -1203,7 +1415,7 @@
                 
                 card.innerHTML = `
                     <div class="paste-card-header">
-                        <h3 class="paste-title">${paste.title || 'Untitled'}</h3>
+                        <h3 class="paste-title" title="${paste.title || 'Untitled'}">${paste.title || 'Untitled'}</h3>
                         <span class="paste-language">${paste.language}</span>
                     </div>
                     <div class="paste-card-body">
@@ -1276,7 +1488,18 @@
                     })
                     .catch(err => {
                         console.error('Failed to copy: ', err);
-                        showAlert('Failed to copy to clipboard', 'error');
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = text;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            showAlert('Copied to clipboard!', 'success');
+                        } catch (e) {
+                            showAlert('Failed to copy to clipboard', 'error');
+                        }
+                        document.body.removeChild(textArea);
                     });
             };
 
