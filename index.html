@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PastePro - Share Your Code</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --bg-dark: #121212;
+            --card-dark: #1e1e1e;
+            --text-dark: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        body.dark-mode header {
+            background-color: var(--card-dark);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode nav a {
+            color: var(--text-dark);
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        body.dark-mode .theme-toggle {
+            color: var(--text-dark);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        body.dark-mode .btn-outline {
+            color: var(--text-dark);
+            border-color: var(--text-dark);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .page {
+            display: none;
+            padding: 40px 0;
+            min-height: calc(100vh - 150px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        .paste-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        body.dark-mode .paste-form {
+            background-color: var(--card-dark);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        body.dark-mode .form-control {
+            background-color: #2d2d2d;
+            border-color: #444;
+            color: var(--text-dark);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea.form-control {
+            min-height: 300px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .paste-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .paste-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .paste-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        body.dark-mode .paste-card {
+            background-color: var(--card-dark);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .paste-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .paste-card-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .paste-card-header {
+            border-bottom: 1px solid #444;
+        }
+
+        .paste-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .paste-language {
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .paste-card-body {
+            padding: 15px;
+        }
+
+        .paste-preview {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 150px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .paste-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, white);
+        }
+
+        body.dark-mode .paste-preview::after {
+            background: linear-gradient(transparent, var(--card-dark));
+        }
+
+        .paste-card-footer {
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        body.dark-mode .paste-card-footer {
+            border-top: 1px solid #444;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .auth-container {
+            background-color: var(--card-dark);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.dark-mode .auth-tabs {
+            border-bottom: 1px solid #444;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .auth-tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #eee;
+        }
+
+        body.dark-mode .divider::before {
+            background-color: #444;
+        }
+
+        .divider span {
+            background-color: white;
+            padding: 0 15px;
+            color: var(--gray);
+        }
+
+        body.dark-mode .divider span {
+            background-color: var(--card-dark);
+        }
+
+        .btn-google {
+            background-color: #db4437;
+            color: white;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .btn-google:hover {
+            background-color: #c23321;
+        }
+
+        .view-paste {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .view-paste {
+            background-color: var(--card-dark);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .paste-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.dark-mode .paste-meta {
+            border-bottom: 1px solid #444;
+        }
+
+        .paste-content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        body.dark-mode .paste-content {
+            background-color: #2d2d2d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        body.dark-mode footer {
+            border-top: 1px solid #444;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        body.dark-mode .alert-success {
+            background-color: #1e3a28;
+            color: #4ade80;
+            border: 1px solid #166534;
+        }
+
+        body.dark-mode .alert-error {
+            background-color: #3a1e22;
+            color: #f87171;
+            border: 1px solid #7f1d1d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .paste-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .paste-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-paste"></i>
+                    <span>PastePro</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#/" class="nav-link active" data-page="home">Home</a></li>
+                        <li><a href="#/my-pastes" class="nav-link" data-page="my-pastes">My Pastes</a></li>
+                        <li><a href="#/create" class="nav-link" data-page="create">Create Paste</a></li>
+                    </ul>
+                </nav>
+                <div class="user-actions">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn btn-outline" id="authButton">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="hero">
+                <h1>Share Code Instantly</h1>
+                <p>PastePro is a simple and powerful tool to share your code snippets, notes, and text with anyone. No registration required, but signing up unlocks more features!</p>
+                <a href="#/create" class="btn btn-primary">Create New Paste</a>
+            </div>
+
+            <h2>Recent Public Pastes</h2>
+            <div class="paste-list" id="recentPastes">
+                <!-- Recent pastes will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Create Paste Page -->
+        <div id="create" class="page">
+            <h1>Create New Paste</h1>
+            <div class="paste-form">
+                <div class="form-group">
+                    <label for="pasteTitle">Title</label>
+                    <input type="text" id="pasteTitle" class="form-control" placeholder="Enter paste title">
+                </div>
+                <div class="form-group">
+                    <label for="pasteContent">Content</label>
+                    <textarea id="pasteContent" class="form-control" placeholder="Paste your code or text here..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pasteLanguage">Syntax Highlighting</label>
+                        <select id="pasteLanguage" class="form-control">
+                            <option value="plaintext">Plain Text</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="java">Java</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="php">PHP</option>
+                            <option value="sql">SQL</option>
+                            <option value="cpp">C++</option>
+                            <option value="csharp">C#</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pasteExpiry">Expiration</label>
+                        <select id="pasteExpiry" class="form-control">
+                            <option value="never">Never</option>
+                            <option value="10min">10 Minutes</option>
+                            <option value="1hour">1 Hour</option>
+                            <option value="1day">1 Day</option>
+                            <option value="1week">1 Week</option>
+                            <option value="1month">1 Month</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pasteVisibility">Visibility</label>
+                    <select id="pasteVisibility" class="form-control">
+                        <option value="public">Public</option>
+                        <option value="unlisted">Unlisted</option>
+                        <option value="private">Private (Requires Login)</option>
+                    </select>
+                </div>
+                <div class="paste-actions">
+                    <button class="btn btn-outline" id="clearPaste">Clear</button>
+                    <button class="btn btn-primary" id="createPaste">Create Paste</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Pastes Page -->
+        <div id="my-pastes" class="page">
+            <h1>My Pastes</h1>
+            <div class="paste-list" id="userPastes">
+                <!-- User's pastes will be loaded here -->
+            </div>
+        </div>
+
+        <!-- View Paste Page -->
+        <div id="view-paste" class="page">
+            <div class="view-paste" id="pasteContainer">
+                <!-- Individual paste will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Auth Modal -->
+        <div id="authModal" class="modal hidden">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" data-tab="signin">Sign In</div>
+                    <div class="auth-tab" data-tab="signup">Sign Up</div>
+                </div>
+
+                <div id="signin-form" class="auth-form active">
+                    <div class="form-group">
+                        <label for="signinEmail">Email</label>
+                        <input type="email" id="signinEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signinPassword">Password</label>
+                        <input type="password" id="signinPassword" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button class="btn btn-primary" id="signinButton" style="width: 100%; margin-bottom: 15px;">Sign In</button>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <button class="btn btn-google" id="googleSignin">
+                        <i class="fab fa-google"></i> Sign in with Google
+                    </button>
+                </div>
+
+                <div id="signup-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="form-control" placeholder="Create a password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password">
+                    </div>
+                    <button class="btn btn-primary" id="signupButton" style="width: 100%; margin-bottom: 15px;">Sign Up</button>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <button class="btn btn-google" id="googleSignup">
+                        <i class="fab fa-google"></i> Sign up with Google
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>PastePro &copy; 2023 - Share your code with the world</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            getDocs, 
+            getDoc, 
+            doc, 
+            query, 
+            where, 
+            orderBy, 
+            limit,
+            serverTimestamp,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAe5hpfmLGKIA_RkIO3jG6Pd1m5hz47jT0",
+            authDomain: "pastepro-4e9db.firebaseapp.com",
+            projectId: "pastepro-4e9db",
+            storageBucket: "pastepro-4e9db.firebasestorage.app",
+            messagingSenderId: "356212418463",
+            appId: "1:356212418463:web:ff999c4601e54096d23faa",
+            measurementId: "G-WXNSPD2XB7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // Make Firebase available globally
+        window.firebase = { app, analytics, auth, db, googleProvider };
+        window.firebaseMethods = {
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            signOut,
+            onAuthStateChanged,
+            collection,
+            addDoc,
+            getDocs,
+            getDoc,
+            doc,
+            query,
+            where,
+            orderBy,
+            limit,
+            serverTimestamp,
+            deleteDoc
+        };
+    </script>
+
+    <!-- App JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const themeToggle = document.getElementById('themeToggle');
+            const authButton = document.getElementById('authButton');
+            const authModal = document.getElementById('authModal');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+            const authTabs = document.querySelectorAll('.auth-tab');
+            const authForms = document.querySelectorAll('.auth-form');
+            
+            // Theme Toggle
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // Check for saved theme preference
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                const icon = themeToggle.querySelector('i');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+
+            // Navigation
+            function navigateToPage(pageId) {
+                // Hide all pages
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Show target page
+                document.getElementById(pageId).classList.add('active');
+                
+                // Update active nav link
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-page') === pageId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Handle hash changes for routing
+            function handleHashChange() {
+                const hash = window.location.hash.substring(1) || '/';
+                
+                if (hash === '/') {
+                    navigateToPage('home');
+                    loadRecentPastes();
+                } else if (hash.startsWith('/paste/')) {
+                    const pasteId = hash.split('/')[2];
+                    navigateToPage('view-paste');
+                    loadPaste(pasteId);
+                } else if (hash === '/create') {
+                    navigateToPage('create');
+                } else if (hash === '/my-pastes') {
+                    navigateToPage('my-pastes');
+                    if (window.currentUser) {
+                        loadUserPastes();
+                    }
+                }
+            }
+
+            // Initial page load
+            handleHashChange();
+            
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashChange);
+            
+            // Nav link clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    window.location.hash = `/${page === 'home' ? '' : page}`;
+                });
+            });
+
+            // Auth Modal Tabs
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding form
+                    authForms.forEach(form => {
+                        form.classList.remove('active');
+                        if (form.id === `${tabId}-form`) {
+                            form.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            // Auth Button
+            authButton.addEventListener('click', function() {
+                if (window.currentUser) {
+                    // User is signed in, show sign out option
+                    if (confirm('Are you sure you want to sign out?')) {
+                        window.firebaseMethods.signOut(window.firebase.auth)
+                            .then(() => {
+                                window.currentUser = null;
+                                authButton.textContent = 'Sign In';
+                                showAlert('Signed out successfully', 'success');
+                                if (window.location.hash === '#/my-pastes') {
+                                    window.location.hash = '#/';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Sign out error:', error);
+                                showAlert('Error signing out', 'error');
+                            });
+                    }
+                } else {
+                    // User is not signed in, show auth modal
+                    authModal.classList.remove('hidden');
+                }
+            });
+
+            // Close modal when clicking outside
+            authModal.addEventListener('click', function(e) {
+                if (e.target === authModal) {
+                    authModal.classList.add('hidden');
+                }
+            });
+
+            // Auth with email and password
+            document.getElementById('signinButton').addEventListener('click', handleEmailSignIn);
+            document.getElementById('signupButton').addEventListener('click', handleEmailSignUp);
+            
+            // Auth with Google
+            document.getElementById('googleSignin').addEventListener('click', handleGoogleSignIn);
+            document.getElementById('googleSignup').addEventListener('click', handleGoogleSignIn);
+
+            function handleEmailSignIn() {
+                const email = document.getElementById('signinEmail').value;
+                const password = document.getElementById('signinPassword').value;
+                
+                if (!email || !password) {
+                    showAlert('Please fill in all fields', 'error');
+                    return;
+                }
+                
+                window.firebaseMethods.signInWithEmailAndPassword(window.firebase.auth, email, password)
+                    .then((userCredential) => {
+                        authModal.classList.add('hidden');
+                        showAlert('Signed in successfully', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('Sign in error:', error);
+                        showAlert(error.message, 'error');
+                    });
+            }
+
+            function handleEmailSignUp() {
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (!email || !password || !confirmPassword) {
+                    showAlert('Please fill in all fields', 'error');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showAlert('Passwords do not match', 'error');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showAlert('Password should be at least 6 characters', 'error');
+                    return;
+                }
+                
+                window.firebaseMethods.createUserWithEmailAndPassword(window.firebase.auth, email, password)
+                    .then((userCredential) => {
+                        authModal.classList.add('hidden');
+                        showAlert('Account created successfully', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('Sign up error:', error);
+                        showAlert(error.message, 'error');
+                    });
+            }
+
+            function handleGoogleSignIn() {
+                window.firebaseMethods.signInWithPopup(window.firebase.auth, window.firebase.googleProvider)
+                    .then((result) => {
+                        authModal.classList.add('hidden');
+                        showAlert('Signed in successfully', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('Google sign in error:', error);
+                        showAlert(error.message, 'error');
+                    });
+            }
+
+            // Auth state observer
+            window.firebaseMethods.onAuthStateChanged(window.firebase.auth, (user) => {
+                if (user) {
+                    window.currentUser = user;
+                    authButton.textContent = 'Sign Out';
+                } else {
+                    window.currentUser = null;
+                    authButton.textContent = 'Sign In';
+                }
+            });
+
+            // Create Paste
+            document.getElementById('createPaste').addEventListener('click', function() {
+                const title = document.getElementById('pasteTitle').value;
+                const content = document.getElementById('pasteContent').value;
+                const language = document.getElementById('pasteLanguage').value;
+                const expiry = document.getElementById('pasteExpiry').value;
+                const visibility = document.getElementById('pasteVisibility').value;
+                
+                if (!content) {
+                    showAlert('Paste content cannot be empty', 'error');
+                    return;
+                }
+                
+                // If private paste and user not signed in
+                if (visibility === 'private' && !window.currentUser) {
+                    showAlert('You need to be signed in to create private pastes', 'error');
+                    authModal.classList.remove('hidden');
+                    return;
+                }
+                
+                const pasteData = {
+                    title: title || 'Untitled',
+                    content,
+                    language,
+                    expiry,
+                    visibility,
+                    createdAt: window.firebaseMethods.serverTimestamp(),
+                    views: 0
+                };
+                
+                // Add user ID if signed in
+                if (window.currentUser) {
+                    pasteData.userId = window.currentUser.uid;
+                    pasteData.userEmail = window.currentUser.email;
+                }
+                
+                window.firebaseMethods.addDoc(window.firebaseMethods.collection(window.firebase.db, "pastes"), pasteData)
+                    .then((docRef) => {
+                        showAlert('Paste created successfully', 'success');
+                        // Clear form
+                        document.getElementById('pasteTitle').value = '';
+                        document.getElementById('pasteContent').value = '';
+                        // Redirect to the new paste
+                        window.location.hash = `#/paste/${docRef.id}`;
+                    })
+                    .catch((error) => {
+                        console.error('Error creating paste:', error);
+                        showAlert('Error creating paste', 'error');
+                    });
+            });
+
+            // Clear Paste Form
+            document.getElementById('clearPaste').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear the form?')) {
+                    document.getElementById('pasteTitle').value = '';
+                    document.getElementById('pasteContent').value = '';
+                }
+            });
+
+            // Load Recent Pastes
+            function loadRecentPastes() {
+                const recentPastesContainer = document.getElementById('recentPastes');
+                recentPastesContainer.innerHTML = '<p>Loading recent pastes...</p>';
+                
+                const q = window.firebaseMethods.query(
+                    window.firebaseMethods.collection(window.firebase.db, "pastes"),
+                    window.firebaseMethods.where("visibility", "==", "public"),
+                    window.firebaseMethods.orderBy("createdAt", "desc"),
+                    window.firebaseMethods.limit(9)
+                );
+                
+                window.firebaseMethods.getDocs(q)
+                    .then((querySnapshot) => {
+                        recentPastesContainer.innerHTML = '';
+                        
+                        if (querySnapshot.empty) {
+                            recentPastesContainer.innerHTML = '<p>No public pastes found.</p>';
+                            return;
+                        }
+                        
+                        querySnapshot.forEach((doc) => {
+                            const paste = doc.data();
+                            const pasteElement = createPasteCard(paste, doc.id);
+                            recentPastesContainer.appendChild(pasteElement);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error loading pastes:', error);
+                        recentPastesContainer.innerHTML = '<p>Error loading pastes.</p>';
+                    });
+            }
+
+            // Load User Pastes
+            function loadUserPastes() {
+                if (!window.currentUser) {
+                    document.getElementById('userPastes').innerHTML = '<p>Please sign in to view your pastes.</p>';
+                    return;
+                }
+                
+                const userPastesContainer = document.getElementById('userPastes');
+                userPastesContainer.innerHTML = '<p>Loading your pastes...</p>';
+                
+                const q = window.firebaseMethods.query(
+                    window.firebaseMethods.collection(window.firebase.db, "pastes"),
+                    window.firebaseMethods.where("userId", "==", window.currentUser.uid),
+                    window.firebaseMethods.orderBy("createdAt", "desc")
+                );
+                
+                window.firebaseMethods.getDocs(q)
+                    .then((querySnapshot) => {
+                        userPastesContainer.innerHTML = '';
+                        
+                        if (querySnapshot.empty) {
+                            userPastesContainer.innerHTML = '<p>You haven\'t created any pastes yet.</p>';
+                            return;
+                        }
+                        
+                        querySnapshot.forEach((doc) => {
+                            const paste = doc.data();
+                            const pasteElement = createPasteCard(paste, doc.id, true);
+                            userPastesContainer.appendChild(pasteElement);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error loading user pastes:', error);
+                        userPastesContainer.innerHTML = '<p>Error loading your pastes.</p>';
+                    });
+            }
+
+            // Load Individual Paste
+            function loadPaste(pasteId) {
+                const pasteContainer = document.getElementById('pasteContainer');
+                pasteContainer.innerHTML = '<p>Loading paste...</p>';
+                
+                const docRef = window.firebaseMethods.doc(window.firebase.db, "pastes", pasteId);
+                
+                window.firebaseMethods.getDoc(docRef)
+                    .then((docSnap) => {
+                        if (docSnap.exists()) {
+                            const paste = docSnap.data();
+                            
+                            // Check if paste is private and user doesn't have access
+                            if (paste.visibility === 'private' && 
+                                (!window.currentUser || paste.userId !== window.currentUser.uid)) {
+                                pasteContainer.innerHTML = '<p>This is a private paste and you do not have access to it.</p>';
+                                return;
+                            }
+                            
+                            pasteContainer.innerHTML = `
+                                <div class="paste-meta">
+                                    <div>
+                                        <h2>${paste.title}</h2>
+                                        <p>Created by: ${paste.userEmail || 'Anonymous'}</p>
+                                    </div>
+                                    <div>
+                                        <span class="paste-language">${paste.language}</span>
+                                    </div>
+                                </div>
+                                <div class="paste-content">${escapeHtml(paste.content)}</div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline" onclick="copyToClipboard('${escapeHtml(paste.content)}')">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                    ${window.currentUser && paste.userId === window.currentUser.uid ? 
+                                        `<button class="btn btn-outline" onclick="deletePaste('${pasteId}')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>` : ''
+                                    }
+                                    <button class="btn btn-primary" onclick="window.location.hash = '#/create'">
+                                        <i class="fas fa-plus"></i> New Paste
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            pasteContainer.innerHTML = '<p>Paste not found.</p>';
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error loading paste:', error);
+                        pasteContainer.innerHTML = '<p>Error loading paste.</p>';
+                    });
+            }
+
+            // Create Paste Card Element
+            function createPasteCard(paste, id, showDelete = false) {
+                const card = document.createElement('div');
+                card.className = 'paste-card';
+                
+                // Truncate content for preview
+                const previewContent = paste.content.length > 200 ? 
+                    paste.content.substring(0, 200) + '...' : paste.content;
+                
+                card.innerHTML = `
+                    <div class="paste-card-header">
+                        <h3 class="paste-title">${paste.title || 'Untitled'}</h3>
+                        <span class="paste-language">${paste.language}</span>
+                    </div>
+                    <div class="paste-card-body">
+                        <div class="paste-preview">${escapeHtml(previewContent)}</div>
+                    </div>
+                    <div class="paste-card-footer">
+                        <span>${formatDate(paste.createdAt?.toDate())}</span>
+                        <span>${paste.views || 0} views</span>
+                    </div>
+                `;
+                
+                card.addEventListener('click', function() {
+                    window.location.hash = `#/paste/${id}`;
+                });
+                
+                return card;
+            }
+
+            // Utility Functions
+            function showAlert(message, type) {
+                // Remove existing alerts
+                const existingAlerts = document.querySelectorAll('.alert');
+                existingAlerts.forEach(alert => alert.remove());
+                
+                // Create new alert
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                alert.textContent = message;
+                
+                // Add to page
+                const activePage = document.querySelector('.page.active');
+                activePage.insertBefore(alert, activePage.firstChild);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 5000);
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function formatDate(date) {
+                if (!date) return 'Unknown';
+                
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} min ago`;
+                if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                
+                return date.toLocaleDateString();
+            }
+
+            // Global functions for paste actions
+            window.copyToClipboard = function(text) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        showAlert('Copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                        showAlert('Failed to copy to clipboard', 'error');
+                    });
+            };
+
+            window.deletePaste = function(pasteId) {
+                if (confirm('Are you sure you want to delete this paste? This action cannot be undone.')) {
+                    const docRef = window.firebaseMethods.doc(window.firebase.db, "pastes", pasteId);
+                    
+                    window.firebaseMethods.deleteDoc(docRef)
+                        .then(() => {
+                            showAlert('Paste deleted successfully', 'success');
+                            window.location.hash = '#/my-pastes';
+                        })
+                        .catch((error) => {
+                            console.error('Error deleting paste:', error);
+                            showAlert('Error deleting paste', 'error');
+                        });
+                }
+            };
+        });
+    </script>
+</body>
+</html>
